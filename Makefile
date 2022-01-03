@@ -3,8 +3,8 @@ PSAPI_OPTION=-lPsapi -DPSAPI_VERSION=1
 
 LINK_OPTION=$(PSAPI_OPTION) $(CPP_VERSION_OPTION)
 
-all: main.cpp process.o
-	g++ main.cpp process.o -o pmr.exe $(LINK_OPTION)
+all: src/main.cpp bin/process.o
+	g++ src/main.cpp bin/process.o -o pmr.exe $(LINK_OPTION)
 
-process.o: process.h process.cpp
-	g++ process.cpp -c $(LINK_OPTION)
+bin/process.o: src/process.h src/process.cpp
+	g++ src/process.cpp -c $(LINK_OPTION) -o bin/process.o

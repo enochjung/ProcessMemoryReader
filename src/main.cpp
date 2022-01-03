@@ -2,7 +2,7 @@
 #include <psapi.h>
 #include <iostream>
 
-#include "process.h"
+#include "src/process.h"
 
 int main()
 {
