@@ -1,31 +1,24 @@
 #include <windows.h>
 #include <psapi.h>
+#include <algorithm>
 #include <iostream>
 
 #include "process.h"
 
 int main()
 {
-	DWORD aProcesses[1024], cbNeeded, cProcesses;
-	unsigned int i;
+	std::vector<process> processes = process::get_every_processes();
 
-	if (!EnumProcesses(aProcesses, sizeof(aProcesses), &cbNeeded)) {
-		return 1;
-	}
+	std::sort(processes.begin(), processes.end(), [](const process &lhs, const process &rhs) -> bool {
+		return lhs.get_name() < rhs.get_name();
+	});
 
-	cProcesses = cbNeeded / sizeof(DWORD);
-
-	for (i=0; i<cProcesses; ++i) {
-		if (aProcesses[i] != 0 ) {
-			try {
-				process p(aProcesses[i]);
-				std::cout << p.get_path() << '\n';
-			}
-			catch (const no_process_found &e) {
-			}
-			catch (const unknown_process &e) {
-				std::cout << "failed to get file name\n";
-			}
+	for (process p : processes) {
+		try {
+			std::cout << p.get_PID() << '\t' << p.get_name() << '\n';
+		}
+		catch (const unknown_process &e) {
+			std::cout << "failed to get file name\n";
 		}
 	}
 
