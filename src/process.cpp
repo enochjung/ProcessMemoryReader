@@ -1,4 +1,4 @@
-#include "src/process.h"
+#include "process.h"
 #include <psapi.h>
 
 const char* no_process_found::what() const noexcept {
