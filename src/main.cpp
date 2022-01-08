@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <iostream>
 
-#include "process.h"
+#include "process/process.h"
 
 int main()
 {
@@ -19,6 +19,16 @@ int main()
 		}
 		catch (const unknown_process &e) {
 			std::cout << "failed to get file name\n";
+		}
+	}
+
+	int pid;
+	std::cout << "\ninput pid >";
+	std::cin >> pid;
+	for (process p : processes) {
+		if (p.get_PID() == pid) {
+			MODULEINFO mi = p.get_module_information();
+			std::cout << "base address : " << mi.lpBaseOfDll << "\n";
 		}
 	}
 

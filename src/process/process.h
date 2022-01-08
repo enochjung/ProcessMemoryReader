@@ -7,35 +7,14 @@
 #include <string>
 #include <vector>
 
-class no_process_found : public std::exception {
-public:
-	virtual const char* what() const noexcept;
-};
+#include "module.h"
 
-class unknown_process : public std::exception {
-public:
-	virtual const char* what() const noexcept;
-};
-
-class too_large_to_allocate : public std::exception {
-public:
-	virtual const char* what() const noexcept;
-};
-
-class inaccessible_process : public std::exception {
-public:
-	virtual const char* what() const noexcept;
-};
-
-class weird_process_path : public std::exception {
-public:
-	virtual const char* what() const noexcept;
-};
-
-class process_load_error : public std::exception {
-public:
-	virtual const char* what() const noexcept;
-};
+class no_process_found : public std::exception {};
+class unknown_process : public std::exception {};
+class too_large_to_allocate : public std::exception {};
+class inaccessible_process : public std::exception {};
+class weird_process_path : public std::exception {};
+class process_load_error : public std::exception {};
 
 struct handle_deleter {
 	void operator()(HANDLE handle);
@@ -50,6 +29,7 @@ private:
 	std::string file_path;
 	std::string file_name;
 	unique_HANDLE get_handle() const;
+	std::vector<module> get_module() const;
 	void initialize_path();
 	void initialize_name();
 
@@ -58,6 +38,7 @@ public:
 	DWORD get_PID() const;
 	std::string get_path() const;
 	std::string get_name() const;
+	MODULEINFO get_module_information() const;
 	std::vector<BYTE> get_memory(LPCVOID base_address, SIZE_T size) const;
 
 	static std::vector<process> get_every_processes();

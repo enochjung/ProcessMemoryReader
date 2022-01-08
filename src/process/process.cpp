@@ -5,33 +5,10 @@
 #include <regex>
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include "process.h"
-#include "error.h"
-
-const char* no_process_found::what() const noexcept {
-	return "failed to find process";
-}
-
-const char* unknown_process::what() const noexcept {
-	return "failed to get process path";
-}
-
-const char* too_large_to_allocate::what() const noexcept {
-	return "failed to allocate buffer";
-}
-
-const char* inaccessible_process::what() const noexcept {
-	return "failed to access process memory";
-}
-
-const char* weird_process_path::what() const noexcept {
-	return "failed to parse process path";
-}
-
-const char* process_load_error::what() const noexcept {
-	return "failed to load processes";
-}
+#include "../error.h"
 
 void handle_deleter::operator()(HANDLE handle) { 
 	if (handle != INVALID_HANDLE_VALUE)
@@ -49,6 +26,11 @@ unique_HANDLE process::get_handle() const {
 	if (handle == nullptr)
 		throw no_process_found();
 	return std::move(handle);
+}
+
+std::vector<module> process::get_module() const {
+	unique_HANDLE handle = get_handle();
+	return module::get_every_modules(handle.get());
 }
 
 void process::initialize_path() {
@@ -103,6 +85,11 @@ std::string process::get_name() const {
 	return file_name;
 }
 
+MODULEINFO process::get_module_information() const {
+	unique_HANDLE handle = get_handle();
+	return get_module()[0].get_module_information(handle.get());
+}
+
 std::vector<BYTE> process::get_memory(LPCVOID base_address, SIZE_T size) const {
 	SIZE_T numberOfBytesRead;
 	std::unique_ptr<BYTE[]> buffer;
@@ -112,8 +99,10 @@ std::vector<BYTE> process::get_memory(LPCVOID base_address, SIZE_T size) const {
 		buffer = std::make_unique<BYTE[]>(size);
 		unique_HANDLE handle = get_handle();
 
-		if (ReadProcessMemory(handle.get(), base_address, buffer.get(), size, &numberOfBytesRead) == 0)
+		if (ReadProcessMemory(handle.get(), base_address, buffer.get(), size, &numberOfBytesRead) == 0) {
+			ErrorExit((LPTSTR)"ReadProcessMemory");
 			throw inaccessible_process();
+		}
 
 		memory = std::vector<BYTE>(buffer.get(), buffer.get()+numberOfBytesRead);
 	}
