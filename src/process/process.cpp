@@ -22,7 +22,7 @@ unique_HANDLE make_unique_HANDLE(HANDLE handle) {
 }
 
 unique_HANDLE process::get_handle() const {
-	unique_HANDLE handle = make_unique_HANDLE(OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, PID));
+	unique_HANDLE handle = make_unique_HANDLE(OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, _PID));
 	if (handle == nullptr)
 		throw no_process_found();
 	return std::move(handle);
@@ -38,7 +38,7 @@ void process::initialize_path() {
 	unique_HANDLE handle = get_handle();
 	if (GetModuleFileNameExW(handle.get(), NULL, szProcessPath, sizeof(szProcessPath)/sizeof(WCHAR))) {
 		std::wstring ws(szProcessPath);
-		file_path = std::string(ws.begin(), ws.end());
+		_file_path = std::string(ws.begin(), ws.end());
 	}
 	else {
 		throw unknown_process();
@@ -52,7 +52,7 @@ void process::initialize_name() {
 
 	if (std::regex_match(path, match, re)) {
 		try {
-			file_name = match[1].str();
+			_file_name = match[1].str();
 		}
 		catch (const std::out_of_range &e) {
 			throw weird_process_path();
@@ -62,7 +62,7 @@ void process::initialize_name() {
 		throw weird_process_path();
 }
 
-process::process(DWORD PID) : PID(PID) {
+process::process(DWORD PID) : _PID(PID) {
 	try {
 		get_handle();
 		initialize_path();
@@ -74,15 +74,15 @@ process::process(DWORD PID) : PID(PID) {
 }
 
 DWORD process::get_PID() const {
-	return PID;
+	return _PID;
 }
 
 std::string process::get_path() const {
-	return file_path;
+	return _file_path;
 }
 
 std::string process::get_name() const {
-	return file_name;
+	return _file_name;
 }
 
 MODULEINFO process::get_module_information() const {

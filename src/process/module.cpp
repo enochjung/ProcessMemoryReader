@@ -3,12 +3,12 @@
 #include "module.h"
 #include "../error.h"
 
-module::module(HMODULE hModule) : hModule(hModule) {}
+module::module(HMODULE hModule) : _hModule(hModule) {}
 
 std::string module::get_path(HANDLE hProcess) const {
 	CHAR szModName[MAX_PATH];
 
-	if (GetModuleFileNameExA(hProcess, hModule, szModName, sizeof(szModName) / sizeof(CHAR)) == 0)
+	if (GetModuleFileNameExA(hProcess, _hModule, szModName, sizeof(szModName) / sizeof(CHAR)) == 0)
 		throw unknown_module_path();
 
 	return std::string(szModName);
@@ -17,7 +17,7 @@ std::string module::get_path(HANDLE hProcess) const {
 MODULEINFO module::get_module_information(HANDLE hProcess) const {
 	MODULEINFO mi;
 
-	if (GetModuleInformation(hProcess, hModule, &mi, sizeof(mi)) == 0)
+	if (GetModuleInformation(hProcess, _hModule, &mi, sizeof(mi)) == 0)
 		throw module_information_load_error();
 
 	return mi;
@@ -37,7 +37,7 @@ std::vector<module> module::get_every_modules(HANDLE hProcess) {
 
 	for (i=0; i<(cbNeeded/sizeof(HMODULE)); ++i)
 		modules.push_back(module(hMods[i]));
-		/*
+		/* 모듈의 이름 출력
 		WCHAR szModName[MAX_PATH];
 		if (GetModuleFileNameExW(handle.get(), hMods[i], szModName, sizeof(szModName) / sizeof(WCHAR))) {
 			std::wstring wstrModName = szModName;

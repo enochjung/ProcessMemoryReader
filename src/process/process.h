@@ -25,9 +25,10 @@ unique_HANDLE make_unique_HANDLE(HANDLE handle);
 
 class process {
 private:
-	DWORD PID;
-	std::string file_path;
-	std::string file_name;
+	DWORD _PID;
+	std::string _file_path;
+	std::string _file_name;
+
 	unique_HANDLE get_handle() const;
 	std::vector<module> get_module() const;
 	void initialize_path();

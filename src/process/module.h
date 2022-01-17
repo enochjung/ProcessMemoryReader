@@ -13,7 +13,7 @@ class module_information_load_error : public std::exception {};
 
 class module {
 private:
-	HMODULE hModule;
+	HMODULE _hModule;
 
 public:
 	module(HMODULE hModule);
