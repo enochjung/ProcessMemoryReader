@@ -13,7 +13,7 @@
 
 template<typename T>
 struct memory_pair {
-	int address;
+	PVOID address;
 	T value;
 };
 

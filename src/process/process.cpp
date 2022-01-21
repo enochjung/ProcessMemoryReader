@@ -90,21 +90,47 @@ MODULEINFO process::get_module_information() const {
 	return get_module()[0].get_module_information(handle.get());
 }
 
-std::vector<BYTE> process::get_memory(LPCVOID base_address, SIZE_T size) const {
-	SIZE_T numberOfBytesRead;
-	std::unique_ptr<BYTE[]> buffer;
+std::vector<BYTE> process::get_memory() const {
+	//SIZE_T numberOfBytesRead;
 	std::vector<BYTE> memory;
 
 	try {
-		buffer = std::make_unique<BYTE[]>(size);
+		SYSTEM_INFO si;
 		unique_HANDLE handle = get_handle();
+		LPVOID minAddress, maxAddress;
 
+		//buffer = std::make_unique<BYTE[]>(size);
+
+		/*
 		if (ReadProcessMemory(handle.get(), base_address, buffer.get(), size, &numberOfBytesRead) == 0) {
 			ErrorExit((LPTSTR)"ReadProcessMemory");
 			throw inaccessible_process();
 		}
+		*/
 
-		memory = std::vector<BYTE>(buffer.get(), buffer.get()+numberOfBytesRead);
+		GetSystemInfo(&si);
+		minAddress = si.lpMinimumApplicationAddress;
+		maxAddress = si.lpMaximumApplicationAddress;
+
+		while (minAddress < maxAddress) {
+			MEMORY_BASIC_INFORMATION mbi;
+
+			if (VirtualQueryEx(handle.get(), minAddress, &mbi, sizeof(mbi)) == 0) {
+				throw invalid_parameter();
+			}
+			if (mbi.State == MEM_COMMIT) {
+				std::unique_ptr<BYTE[]> buffer = std::make_unique<BYTE[]>(mbi.RegionSize);
+
+				if (ReadProcessMemory(handle.get(), mbi.BaseAddress, buffer.get(), mbi.RegionSize, NULL) != 0) {
+					std::vector<BYTE> page_memory(buffer.get(), buffer.get()+mbi.RegionSize);
+					memory.insert(memory.end(), page_memory.begin(), page_memory.end());
+				}
+			}
+			std::cout << "BaseAddress:" << mbi.BaseAddress << ", RegionSize:" << mbi.RegionSize << "\n";
+			minAddress = (LPBYTE)mbi.BaseAddress + mbi.RegionSize;
+		}
+
+		//memory = std::vector<BYTE>(buffer.get(), buffer.get()+numberOfBytesRead);
 	}
 	catch (const std::bad_alloc &e) {
 		throw too_large_to_allocate();

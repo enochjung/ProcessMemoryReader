@@ -15,6 +15,7 @@ class too_large_to_allocate : public std::exception {};
 class inaccessible_process : public std::exception {};
 class weird_process_path : public std::exception {};
 class process_load_error : public std::exception {};
+class invalid_parameter : public std::exception {};
 
 struct handle_deleter {
 	void operator()(HANDLE handle);
@@ -40,7 +41,7 @@ public:
 	std::string get_path() const;
 	std::string get_name() const;
 	MODULEINFO get_module_information() const;
-	std::vector<BYTE> get_memory(LPCVOID base_address, SIZE_T size) const;
+	std::vector<BYTE> get_memory() const;
 
 	static std::vector<process> get_every_processes();
 };
